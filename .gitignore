@@ -17,5 +17,6 @@ reports/*.png
 reports/*.csv
 reports/eval_results.json
 !reports/eval_gt_words.json
+!reports/eval_easyocr_50.json
 !reports/.gitkeep
 .easyocr/

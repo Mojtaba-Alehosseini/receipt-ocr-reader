@@ -5,7 +5,9 @@ Upload a photo of a receipt → OpenCV preprocessing → EasyOCR → rule-based 
 
 ## Key results
 
-Field-level accuracy on SROIE 2019 test set (361 receipts, rule-based extraction on ground-truth OCR text):
+Two evaluation modes on SROIE 2019 test set (Malaysian receipts):
+
+**Extraction accuracy** (ground-truth OCR words as input — isolates the rule-based parser, 361 receipts):
 
 | Field | Correct | Total | Accuracy |
 |---|---|---|---|
@@ -13,12 +15,20 @@ Field-level accuracy on SROIE 2019 test set (361 receipts, rule-based extraction
 | Date | 345 | 361 | **95.6 %** |
 | Total amount | 192 | 361 | **53.2 %** |
 
-Numbers come from `reports/eval_gt_words.json`, committed.
-Evaluation uses the dataset's own OCR text to isolate extraction accuracy from OCR quality.
-The date parser handles English, Italian (gg/mm/aaaa), and 2-digit-year formats.
-Total accuracy is lower because Malaysian receipts contain multiple amounts (subtotal, tax,
-cash given, change) — the most common failure mode is picking the cash/change line instead
-of the net total.
+**Full pipeline accuracy** (EasyOCR on raw images — end-to-end, 50 receipts):
+
+| Field | Correct | Total | Accuracy |
+|---|---|---|---|
+| Merchant (company) | 15 | 50 | **30.0 %** |
+| Date | 27 | 50 | **54.0 %** |
+| Total amount | 16 | 50 | **32.0 %** |
+
+Numbers from `reports/eval_gt_words.json` and `reports/eval_easyocr_50.json`, both committed.
+The gap between modes shows EasyOCR's OCR errors on low-resolution receipt scans — improving
+the preprocessing (deskew quality, contrast) or swapping to a receipt-tuned OCR model would
+close most of this gap. The date parser handles English, Italian (gg/mm/aaaa), and 2-digit-year
+formats; total accuracy is limited by receipt layouts where cash/change amounts appear after the
+net total line.
 
 ## Story: Pinfopedia → this
 
