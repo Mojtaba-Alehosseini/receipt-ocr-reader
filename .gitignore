@@ -13,8 +13,9 @@ data/sroie/
 data/samples/*.jpg
 data/samples/*.png
 !data/samples/.gitkeep
-reports/*.json
 reports/*.png
 reports/*.csv
+reports/eval_results.json
+!reports/eval_gt_words.json
 !reports/.gitkeep
 .easyocr/
