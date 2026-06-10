@@ -1,0 +1,9 @@
+easyocr>=1.7
+opencv-python-headless>=4.8
+pydantic>=2.0
+fastapi>=0.110
+uvicorn[standard]>=0.28
+gradio>=4.0
+pandas>=2.0
+pillow>=10.0
+python-multipart>=0.0.9
