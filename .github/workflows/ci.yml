@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install ruff pytest pytest-anyio httpx anyio
+          pip install pydantic>=2 fastapi uvicorn python-multipart pandas pillow
+          pip install opencv-python-headless
+          pip install -e .
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Test (pytest — skip OCR engine tests in CI)
+        run: pytest -q -k "not test_api"
