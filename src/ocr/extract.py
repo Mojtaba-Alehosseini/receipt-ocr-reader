@@ -194,6 +194,8 @@ def extract_merchant(lines: list[str]) -> Optional[str]:
 def extract_items(lines: list[str]) -> list[LineItem]:
     items: list[LineItem] = []
     for line in lines:
+        if _TOTAL_KWS.search(line):  # skip total/subtotal summary lines
+            continue
         m = _ITEM_LINE.match(line.strip())
         if m:
             if m.group("desc") and m.group("amt"):
@@ -217,6 +219,23 @@ def extract_items(lines: list[str]) -> list[LineItem]:
                 except (ValueError, Exception):
                     pass
     return items
+
+
+def validate_total(
+    total: Optional[float],
+    items: list[LineItem],
+    tolerance: float = 0.05,
+) -> bool:
+    """Return True if the sum of item amounts matches the declared total within tolerance.
+
+    Useful as a post-extraction sanity check: if the OCR parsed the items but the
+    line-by-line sum deviates from the total field by more than `tolerance` (absolute),
+    the extraction is likely incomplete or mis-parsed.
+    """
+    if total is None or not items:
+        return False
+    items_sum = sum(item.amount for item in items)
+    return abs(items_sum - total) <= tolerance
 
 
 def extract(lines: list[str]) -> Receipt:

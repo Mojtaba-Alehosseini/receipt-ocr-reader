@@ -89,13 +89,17 @@ python eval/run_eval.py --ocr --limit 50
 ## Tests
 
 ```bash
-pytest -q   # 36 passed
+pytest -q   # 45 passed
 ```
 
 - `test_schema.py` — pydantic Receipt validation (6 tests)
-- `test_extract.py` — date/amount/merchant extraction incl. Italian formats (22 tests)
+- `test_extract.py` — date/amount/merchant/item extraction + `validate_total` (31 tests)
 - `test_preprocess.py` — OpenCV pipeline shapes (5 tests)
 - `test_api.py` — FastAPI contract, non-image rejection, mock OCR (4 tests)
+
+> **`validate_total(total, items, tolerance=0.05)`** — post-extraction sanity check:
+> returns `True` when the sum of parsed line items matches the declared total within tolerance.
+> Useful for flagging receipts where OCR missed items or mis-parsed the total field.
 
 ## Error analysis (where it fails)
 
@@ -113,3 +117,7 @@ inside a longer line where the time portion confuses the day/month pattern).
 
 SROIE 2019 (ICDAR2019 Scanned Receipts OCR & Information Extraction) — research dataset;
 see `eval/DATASET.md`. EasyOCR (Apache-2.0). Code: MIT — see [LICENSE](LICENSE).
+
+---
+
+*Built by [Mojtaba Alehosseini](https://github.com/Mojtaba-Alehosseini) — data scientist.*

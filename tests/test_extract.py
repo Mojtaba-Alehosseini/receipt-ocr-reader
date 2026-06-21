@@ -6,8 +6,10 @@ from ocr.extract import (
     _normalise_amount,
     extract,
     extract_date,
+    extract_items,
     extract_merchant,
     extract_total,
+    validate_total,
 )
 
 
@@ -117,3 +119,53 @@ class TestExtract:
         r = extract([])
         assert r.merchant is None
         assert r.total is None
+
+
+# ---------------------------------------------------------------------------
+# Line item extraction
+# ---------------------------------------------------------------------------
+class TestExtractItems:
+    def test_desc_then_amount(self):
+        items = extract_items(["Milk           1.50", "Bread          2.00"])
+        assert len(items) == 2
+        assert items[0].description == "Milk"
+        assert items[0].amount == pytest.approx(1.50)
+        assert items[1].description == "Bread"
+        assert items[1].amount == pytest.approx(2.00)
+
+    def test_italian_comma_decimal(self):
+        items = extract_items(["Latte          1,50"])
+        assert len(items) == 1
+        assert items[0].amount == pytest.approx(1.50)
+
+    def test_no_items_when_no_amounts(self):
+        assert extract_items(["just text", "header line"]) == []
+
+    def test_total_line_not_included_as_item(self):
+        """Lines with no description (e.g. bare 'Total 3.50') should not parse as items."""
+        items = extract_items(["Milk 1.50", "Bread 2.00", "Total 3.50"])
+        assert all(item.description.lower() not in ("total", "") for item in items)
+
+
+# ---------------------------------------------------------------------------
+# Total validation
+# ---------------------------------------------------------------------------
+class TestValidateTotal:
+    def test_matches_within_tolerance(self):
+        items = extract_items(["Milk 1.50", "Bread 2.00"])
+        assert validate_total(3.50, items, tolerance=0.05) is True
+
+    def test_mismatch_outside_tolerance(self):
+        items = extract_items(["Milk 1.50", "Bread 2.00"])
+        assert validate_total(5.00, items, tolerance=0.05) is False
+
+    def test_none_total_returns_false(self):
+        items = extract_items(["Milk 1.50"])
+        assert validate_total(None, items) is False
+
+    def test_empty_items_returns_false(self):
+        assert validate_total(3.50, []) is False
+
+    def test_rounding_within_tolerance(self):
+        items = extract_items(["Item 1.33", "Item 1.34"])
+        assert validate_total(2.67, items, tolerance=0.05) is True
